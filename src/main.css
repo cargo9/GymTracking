@@ -1,0 +1,48 @@
+* { box-sizing: border-box; }
+body { margin: 0; }
+input:focus-visible, button:focus-visible { outline: 2px solid #c67139; outline-offset: 2px; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+#workout-list > div {
+  color: #f5ead8;
+  font-family: 'Figtree', sans-serif;
+}
+
+/* заголовок упражнения */
+#workout-list > div:has(strong) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Caprasimo', serif;
+  font-size: 18px;
+  margin-top: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #322b27;
+}
+
+/* строка подхода */
+#workout-list > div:not(:has(strong)) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-top: 8px;
+  background: #241f1d;
+  border: 1px solid #322b27;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+/* кнопки-корзинки */
+#workout-list button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  opacity: 0.5;
+  transition: opacity .15s;
+}
+#workout-list button:hover {
+  opacity: 1;
+}

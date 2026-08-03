@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="src/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div style="min-height:100vh;background:#1a1817;color:#f5ead8;font-family:'Figtree',sans-serif;padding:24px 0 64px;display:flex;justify-content:center">
+  <div style="width:100%;max-width:440px;padding:0 20px;display:flex;flex-direction:column;gap:28px">
+
+    <header style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#7a8a5e;font-weight:600">Трекер тренировок</span>
+      <h1 style="margin:0;font-family:'Caprasimo',serif;font-size:34px;line-height:1.1;font-weight:400;color:#f5ead8">Тренировка</h1>
+    </header>
+
+    <section style="background:#241f1d;border:1px solid #322b27;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label for="exercise-name" style="font-size:13px;letter-spacing:.04em;color:#a89e94">Упражнение</label>
+        <input id="exercise-name" type="text" placeholder="Жим лёжа" style="width:100%;height:52px;padding:0 20px;border-radius:999px;border:1px solid #3b332e;background:#1a1817;color:#f5ead8;font-family:inherit;font-size:16px">
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label for="weight" style="font-size:13px;color:#a89e94">Вес, кг</label>
+          <input id="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="60" style="width:100%;height:52px;padding:0 14px;border-radius:999px;border:1px solid #3b332e;background:#1a1817;color:#f5ead8;font-family:inherit;font-size:16px;text-align:center">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label for="reps" style="font-size:13px;color:#a89e94">Повторы</label>
+          <input id="reps" type="number" inputmode="numeric" min="0" step="1" placeholder="8" style="width:100%;height:52px;padding:0 14px;border-radius:999px;border:1px solid #3b332e;background:#1a1817;color:#f5ead8;font-family:inherit;font-size:16px;text-align:center">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label for="rest" style="font-size:13px;color:#a89e94">Отдых, с</label>
+          <input id="rest" type="number" inputmode="numeric" min="0" step="5" placeholder="90" style="width:100%;height:52px;padding:0 14px;border-radius:999px;border:1px solid #3b332e;background:#1a1817;color:#f5ead8;font-family:inherit;font-size:16px;text-align:center">
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button id="add-set" type="button" style="height:52px;border-radius:999px;border:none;background:#c67139;color:#1a1817;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer">Добавить подход</button>
+        <button id="add-exercise" type="button" style="height:52px;border-radius:999px;border:1px solid #7a8a5e;background:transparent;color:#a9b98a;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer">Добавить упражнение</button>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:14px">
+      <h2 style="margin:0;font-family:'Caprasimo',serif;font-size:20px;font-weight:400;color:#f5ead8">Сегодня</h2>
+      <div id="workout-list" style="display:flex;flex-direction:column;gap:12px;min-height:120px"></div>
+    </section>
+
+    <script type="module" src="dist/main.js"></script>
+  </div>
+</div>
+</body>
+</html>
