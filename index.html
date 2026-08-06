@@ -14,10 +14,14 @@
     <div style="min-height:100vh;background:#1a1817;color:#f5ead8;font-family:'Figtree',sans-serif;padding:24px 0 64px;display:flex;justify-content:center">
   <div style="width:100%;max-width:440px;padding:0 20px;display:flex;flex-direction:column;gap:28px">
 
-    <header style="display:flex;flex-direction:column;gap:6px">
-      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#7a8a5e;font-weight:600">Трекер тренировок</span>
-      <h1 style="margin:0;font-family:'Caprasimo',serif;font-size:34px;line-height:1.1;font-weight:400;color:#f5ead8">Тренировка</h1>
-    </header>
+    <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#7a8a5e;font-weight:600">Трекер тренировок</span>
+
+    <section style="display:flex;flex-direction:column;gap:14px">
+      <h2 style="margin:0;font-family:'Caprasimo',serif;font-size:20px;font-weight:400;color:#f5ead8">Календарь</h2>
+      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center"></div>
+    </section>
+
+    <h1 style="margin:0;font-family:'Caprasimo',serif;font-size:34px;line-height:1.1;font-weight:400;color:#f5ead8">Тренировка</h1>
 
     <section style="background:#241f1d;border:1px solid #322b27;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:18px">
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -42,7 +46,7 @@
 
       <div style="display:flex;flex-direction:column;gap:10px">
         <button id="add-set" type="button" style="height:52px;border-radius:999px;border:none;background:#c67139;color:#1a1817;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer">Добавить подход</button>
-        <button id="add-exercise" type="button" style="height:52px;border-radius:999px;border:1px solid #7a8a5e;background:transparent;color:#a9b98a;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer">Добавить упражнение</button>
+        <!-- <button id="add-exercise" type="button" style="height:52px;border-radius:999px;border:1px solid #7a8a5e;background:transparent;color:#a9b98a;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer">Добавить упражнение</button> -->
       </div>
     </section>
 

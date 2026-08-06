@@ -1,12 +1,19 @@
-import type { WorkoutSet, Exercise } from "./types.ts";
+import type { WorkoutSet, Exercise, Workout } from "./types.ts";
 
-const exercises: Exercise[] = [];
+const workouts: Workout[] = [];
+
+function getToday(): string {
+  return new Date().toISOString().substring(0, 10);
+}
 
 function render() {
   const list = document.getElementById("workout-list") as HTMLDivElement;
   list.innerHTML = "";
 
-  exercises.forEach((exercise, exIndex) => {
+  const today = getToday();
+  const workout = workouts.find((w) => w.date === today);
+
+  workout?.exercises.forEach((exercise, exIndex) => {
     list.innerHTML += `<div>
       <strong>${exercise.name}</strong>
       <button class="del-exercise" data-ex="${exIndex}">🗑 всё</button>
@@ -21,14 +28,14 @@ function render() {
 }
 
 function save() {
-  localStorage.setItem("exercises", JSON.stringify(exercises));
+  localStorage.setItem("workouts", JSON.stringify(workouts));
 }
 
 function load() {
-  const saved = localStorage.getItem("exercises");
+  const saved = localStorage.getItem("workouts");
   if (saved) {
-    const parsed = JSON.parse(saved);
-    exercises.push(...parsed);
+    const parsed: Workout[] = JSON.parse(saved);
+    workouts.push(...parsed.filter((w) => w.exercises.length > 0));
   }
 }
 
@@ -59,18 +66,28 @@ addSetBtn.addEventListener("click", () => {
 
   const workoutSet: WorkoutSet = { weight, reps, rest };
 
-  const existing = exercises.find(
+  const today = getToday();
+
+  let workout = workouts.find((w) => w.date === today);
+
+  if (!workout) {
+    workout = { date: today, exercises: [] };
+    workouts.push(workout);
+  }
+
+  const existing = workout.exercises.find(
     (ex) => ex.name.toLowerCase() === name.toLowerCase(),
   );
 
   if (existing) {
     existing.sets.push(workoutSet);
   } else {
-    const newExercise: Exercise = { name: name, sets: [workoutSet] };
-    exercises.push(newExercise);
+    const newExercise: Exercise = { name, sets: [workoutSet] };
+    workout.exercises.push(newExercise);
   }
 
   render();
+  renderCalendar();
   save();
 
   weightInput.value = "";
@@ -84,23 +101,72 @@ list.addEventListener("click", (event) => {
   const target = event.target as HTMLElement;
 
   if (target.classList.contains("del-set")) {
-    const exIndex = parseInt(target.dataset.ex as string);
-    const setIndex = parseInt(target.dataset.set as string);
-    const exercise = exercises[exIndex];
-    if (exercise) {
-      exercise.sets.splice(setIndex, 1);
-    }
-    save();
-    render();
+  const exIndex = parseInt(target.dataset.ex as string);
+  const setIndex = parseInt(target.dataset.set as string);
+
+  const workout = workouts.find((w) => w.date === getToday());
+  const exercise = workout?.exercises[exIndex];
+  if (exercise) {
+    exercise.sets.splice(setIndex, 1);
   }
 
-  if (target.classList.contains("del-exercise")) {
-    const exIndex = parseInt(target.dataset.ex as string);
-    exercises.splice(exIndex, 1);
-    save();
-    render();
+  save();
+  render();
+  renderCalendar();
+}
+
+if (target.classList.contains("del-exercise")) {
+  const exIndex = parseInt(target.dataset.ex as string);
+
+  const workout = workouts.find((w) => w.date === getToday());
+  if (workout) {
+    workout.exercises.splice(exIndex, 1);
+
+    if (workout.exercises.length === 0) {
+      const wIndex = workouts.indexOf(workout);
+      workouts.splice(wIndex, 1);
+    }
   }
+
+  save();
+  render();
+  renderCalendar();
+}
 });
 
+
+
+
+
+function daysInCurrentMonth(): number {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById("calendar-grid") as HTMLDivElement;
+  grid.innerHTML = "";
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const days = daysInCurrentMonth();
+
+  for (let day = 1; day <= days; day++) {
+    const monthStr = String(month + 1).padStart(2, "0");
+    const dayStr = String(day).padStart(2, "0");
+    const dateStr = `${year}-${monthStr}-${dayStr}`;
+
+    const hasWorkout = workouts.some((w) => w.date === dateStr);
+
+    const cls = hasWorkout ? "trained" : "";
+
+    grid.innerHTML += `<span class="${cls}">${day}</span>`;
+  }
+}
+
 load();
+renderCalendar();
 render();

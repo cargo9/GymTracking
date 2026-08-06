@@ -46,3 +46,10 @@ input[type=number] { -moz-appearance: textfield; }
 #workout-list button:hover {
   opacity: 1;
 }
+
+#calendar-grid .trained {
+  background: #c0392b;
+  color: #f5ead8;
+  border-radius: 999px;
+  font-weight: 700;
+}
