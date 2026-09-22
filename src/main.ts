@@ -25,26 +25,31 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     heroTitle: "Workout",
     statStreak: "Day streak",
     statVolume: "Volume",
-    statDuration: "Duration",
+    statDuration: "Session time",
     modeStrength: "Strength",
     modeCardio: "Cardio",
-    fieldExercise: "Exercise",
+    fieldExercise: "Exercise name",
     fieldExercisePlaceholder: "Bench press",
     fieldWeight: "Weight",
     fieldWeightPlaceholder: "60",
     fieldReps: "Reps",
     fieldRepsPlaceholder: "8",
-    fieldRest: "Rest, s",
+    fieldRest: "Rest after this set, s",
     fieldRestPlaceholder: "90",
     btnAddSet: "Add set",
-    fieldCardio: "Cardio",
+    fieldCardio: "Cardio duration, min",
     fieldCardioPlaceholder: "30",
     btnAddCardio: "Add cardio",
-    timerTitle: "Rest timer",
-    timerIdleLabel: "Add a set",
-    timerIdleSublabel: "to start the rest timer",
+    timerTitleRest: "Rest timer",
+    timerTitleCardio: "Cardio timer",
+    timerIdleLabelStrength: "Add a set",
+    timerIdleSublabelStrength: "the rest timer will start automatically",
+    timerIdleLabelCardio: "Add cardio",
+    timerIdleSublabelCardio: "the cardio timer will start automatically",
+    timerRunning: "In progress",
     timerSetWord: "Set",
-    timerDone: "Rest finished",
+    timerDoneRest: "Rest finished, go again",
+    timerDoneCardio: "Cardio finished",
     timerReset: "Reset timer",
     todayTitle: "Today",
     weekTitle: "This week",
@@ -76,26 +81,31 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     heroTitle: "Тренировка",
     statStreak: "Дней подряд",
     statVolume: "Тоннаж",
-    statDuration: "Время",
+    statDuration: "Время тренировки",
     modeStrength: "Силовая",
     modeCardio: "Кардио",
-    fieldExercise: "Упражнение",
+    fieldExercise: "Название упражнения",
     fieldExercisePlaceholder: "Жим лёжа",
     fieldWeight: "Вес",
     fieldWeightPlaceholder: "60",
     fieldReps: "Повторы",
     fieldRepsPlaceholder: "8",
-    fieldRest: "Отдых, с",
+    fieldRest: "Отдых после подхода, с",
     fieldRestPlaceholder: "90",
     btnAddSet: "Добавить подход",
-    fieldCardio: "Кардио",
+    fieldCardio: "Длительность кардио, мин",
     fieldCardioPlaceholder: "30",
     btnAddCardio: "Добавить кардио",
-    timerTitle: "Таймер отдыха",
-    timerIdleLabel: "Добавьте подход",
-    timerIdleSublabel: "чтобы запустить отдых",
+    timerTitleRest: "Таймер отдыха",
+    timerTitleCardio: "Таймер кардио",
+    timerIdleLabelStrength: "Добавьте подход",
+    timerIdleSublabelStrength: "таймер отдыха запустится сам",
+    timerIdleLabelCardio: "Добавьте кардио",
+    timerIdleSublabelCardio: "таймер кардио запустится сам",
+    timerRunning: "Идёт",
     timerSetWord: "Подход",
-    timerDone: "Отдых окончен",
+    timerDoneRest: "Отдых окончен, продолжайте",
+    timerDoneCardio: "Кардио завершено",
     timerReset: "Сбросить таймер",
     todayTitle: "Сегодня",
     weekTitle: "Эта неделя",
@@ -274,20 +284,37 @@ function playBeep() {
   }
 }
 
-function startRestTimer(seconds: number, label: string, sublabel: string) {
+function timerModeIsCardio(): boolean {
+  return (document.getElementById("mode-cardio") as HTMLInputElement).checked;
+}
+
+function paintIdleTimer() {
+  const cardio = timerModeIsCardio();
+  const title = cardio ? t("timerTitleCardio") : t("timerTitleRest");
+  const label = cardio ? t("timerIdleLabelCardio") : t("timerIdleLabelStrength");
+  const sublabel = cardio ? t("timerIdleSublabelCardio") : t("timerIdleSublabelStrength");
+
+  (document.getElementById("timer-title") as HTMLElement).textContent = title;
+  (document.getElementById("timer-ring") as HTMLDivElement).style.background = "conic-gradient(#322b27 0turn 1turn)";
+  (document.getElementById("timer-time") as HTMLSpanElement).textContent = "—:—";
+  (document.getElementById("timer-label") as HTMLSpanElement).textContent = label;
+  (document.getElementById("timer-sublabel") as HTMLSpanElement).textContent = sublabel;
+}
+
+function startTimer(seconds: number, title: string, label: string, sublabel: string, doneText: string) {
   if (timerInterval !== undefined) {
     window.clearInterval(timerInterval);
   }
 
   const ring = document.getElementById("timer-ring") as HTMLDivElement;
   const timeEl = document.getElementById("timer-time") as HTMLSpanElement;
+  const titleEl = document.getElementById("timer-title") as HTMLElement;
   const labelEl = document.getElementById("timer-label") as HTMLSpanElement;
   const sublabelEl = document.getElementById("timer-sublabel") as HTMLSpanElement;
 
+  titleEl.textContent = title;
   labelEl.textContent = label;
   sublabelEl.textContent = sublabel;
-  labelEl.removeAttribute("data-i18n");
-  sublabelEl.removeAttribute("data-i18n");
 
   const total = Math.max(1, seconds);
   let remaining = seconds;
@@ -308,7 +335,7 @@ function startRestTimer(seconds: number, label: string, sublabel: string) {
       paint();
       window.clearInterval(timerInterval);
       timerInterval = undefined;
-      sublabelEl.textContent = t("timerDone");
+      sublabelEl.textContent = doneText;
       if (settings.sound) playBeep();
       return;
     }
@@ -321,21 +348,17 @@ function resetTimerDisplay() {
     window.clearInterval(timerInterval);
     timerInterval = undefined;
   }
-
-  const ring = document.getElementById("timer-ring") as HTMLDivElement;
-  const timeEl = document.getElementById("timer-time") as HTMLSpanElement;
-  const labelEl = document.getElementById("timer-label") as HTMLSpanElement;
-  const sublabelEl = document.getElementById("timer-sublabel") as HTMLSpanElement;
-
-  ring.style.background = "conic-gradient(#322b27 0turn 1turn)";
-  timeEl.textContent = "—:—";
-  labelEl.setAttribute("data-i18n", "timerIdleLabel");
-  sublabelEl.setAttribute("data-i18n", "timerIdleSublabel");
-  labelEl.textContent = t("timerIdleLabel");
-  sublabelEl.textContent = t("timerIdleSublabel");
+  paintIdleTimer();
 }
 
 (document.getElementById("timer-reset") as HTMLButtonElement).addEventListener("click", resetTimerDisplay);
+
+(document.getElementById("mode-strength") as HTMLInputElement).addEventListener("change", () => {
+  if (timerInterval === undefined) paintIdleTimer();
+});
+(document.getElementById("mode-cardio") as HTMLInputElement).addEventListener("change", () => {
+  if (timerInterval === undefined) paintIdleTimer();
+});
 
 // ---- stats / calendar / week chart / personal records ----
 
@@ -574,6 +597,8 @@ function applyTranslations() {
 
   const weightLabel = document.getElementById("weight-label");
   if (weightLabel) weightLabel.textContent = `${t("fieldWeight")}, ${unitLabel()}`;
+
+  if (timerInterval === undefined) paintIdleTimer();
 }
 
 // ---- strength form ----
@@ -629,7 +654,7 @@ addSetBtn.addEventListener("click", () => {
   }
 
   refreshAll();
-  startRestTimer(rest, name.trim(), `${t("timerSetWord")} ${setsCount}`);
+  startTimer(rest, t("timerTitleRest"), name.trim(), `${t("timerSetWord")} ${setsCount}`, t("timerDoneRest"));
 
   weightInput.value = "";
   repsInput.value = "";
@@ -660,6 +685,7 @@ addCardioBtn.addEventListener("click", () => {
   workout.cardio.push({ minutes });
 
   refreshAll();
+  startTimer(minutes * 60, t("timerTitleCardio"), t("legendCardio"), t("timerRunning"), t("timerDoneCardio"));
 
   minutesInput.value = "";
 });
