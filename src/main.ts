@@ -23,7 +23,7 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     settingsDarkTheme: "Dark theme",
     settingsDarkThemeHint: "Only dark theme is available for now",
     heroTitle: "Workout",
-    statStreak: "Day streak",
+    statStreak: "Week streak",
     statVolume: "Volume",
     statDuration: "Session time",
     modeStrength: "Strength",
@@ -34,7 +34,7 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     fieldWeightPlaceholder: "60",
     fieldReps: "Reps",
     fieldRepsPlaceholder: "8",
-    fieldRest: "Rest after this set, s",
+    fieldRest: "Rest, s",
     fieldRestPlaceholder: "90",
     btnAddSet: "Add set",
     fieldCardio: "Cardio duration, min",
@@ -79,7 +79,7 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     settingsDarkTheme: "Тёмная тема",
     settingsDarkThemeHint: "Пока доступна только тёмная тема",
     heroTitle: "Тренировка",
-    statStreak: "Дней подряд",
+    statStreak: "Недель подряд",
     statVolume: "Тоннаж",
     statDuration: "Время тренировки",
     modeStrength: "Силовая",
@@ -90,7 +90,7 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     fieldWeightPlaceholder: "60",
     fieldReps: "Повторы",
     fieldRepsPlaceholder: "8",
-    fieldRest: "Отдых после подхода, с",
+    fieldRest: "Отдых, с",
     fieldRestPlaceholder: "90",
     btnAddSet: "Добавить подход",
     fieldCardio: "Длительность кардио, мин",
@@ -161,6 +161,27 @@ function hasActivity(w: Workout | undefined): boolean {
 
 function findWorkout(date: string): Workout | undefined {
   return workouts.find((w) => w.date === date);
+}
+
+// A gap this long between actions means the user left and came back later,
+// not that they rested for 45 minutes mid-session — start timing a fresh
+// session instead of inflating "session time" with the whole gap.
+const SESSION_GAP_MS = 45 * 60 * 1000;
+
+function ensureTodayWorkout(): Workout {
+  const today = getToday();
+  let workout = findWorkout(today);
+  const now = Date.now();
+
+  if (!workout) {
+    workout = { date: today, exercises: [], cardio: [], startedAt: now };
+    workouts.push(workout);
+  } else if (workout.updatedAt && now - workout.updatedAt > SESSION_GAP_MS) {
+    workout.startedAt = now;
+  }
+
+  workout.updatedAt = now;
+  return workout;
 }
 
 // ---- units ----
@@ -362,18 +383,27 @@ function resetTimerDisplay() {
 
 // ---- stats / calendar / week chart / personal records ----
 
+function weekHasActivity(weekStart: Date): boolean {
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    if (hasActivity(findWorkout(dateToStr(d)))) return true;
+  }
+  return false;
+}
+
 function renderStats() {
   const today = getToday();
   const workout = findWorkout(today);
 
   let streak = 0;
-  const cursor = new Date();
-  if (!hasActivity(workout)) {
-    cursor.setDate(cursor.getDate() - 1);
+  const cursor = startOfWeek(new Date());
+  if (!weekHasActivity(cursor)) {
+    cursor.setDate(cursor.getDate() - 7);
   }
-  while (hasActivity(findWorkout(dateToStr(cursor)))) {
+  while (weekHasActivity(cursor)) {
     streak++;
-    cursor.setDate(cursor.getDate() - 1);
+    cursor.setDate(cursor.getDate() - 7);
   }
 
   let volumeKg = 0;
@@ -629,15 +659,7 @@ addSetBtn.addEventListener("click", () => {
   const weight = displayToKg(enteredWeight);
   const workoutSet: WorkoutSet = { weight, reps, rest };
 
-  const today = getToday();
-
-  let workout = findWorkout(today);
-
-  if (!workout) {
-    workout = { date: today, exercises: [], cardio: [], startedAt: Date.now() };
-    workouts.push(workout);
-  }
-  workout.updatedAt = Date.now();
+  const workout = ensureTodayWorkout();
 
   const existing = workout.exercises.find(
     (ex) => ex.name.toLowerCase() === name.toLowerCase(),
@@ -674,14 +696,7 @@ addCardioBtn.addEventListener("click", () => {
     return;
   }
 
-  const today = getToday();
-  let workout = findWorkout(today);
-
-  if (!workout) {
-    workout = { date: today, exercises: [], cardio: [], startedAt: Date.now() };
-    workouts.push(workout);
-  }
-  workout.updatedAt = Date.now();
+  const workout = ensureTodayWorkout();
   workout.cardio.push({ minutes });
 
   refreshAll();
